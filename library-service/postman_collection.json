@@ -1,0 +1,424 @@
+{
+	"info": {
+		"name": "Library Management Service - Lab 1",
+		"_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+		"description": "Lab 1 — Basic REST & DTO. Books CRUD + Search.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "bookId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Books",
+			"item": [
+				{
+					"name": "1. Get All Books",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/books",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"books"
+							]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status is 200', () => pm.response.to.have.status(200));",
+									"pm.test('Response is array', () => {",
+									"    pm.expect(Array.isArray(pm.response.json())).to.be.true;",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "2. Create Book - Harry Potter",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Harry Potter and the Philosopher's Stone\",\n  \"authors\": \"J.K. Rowling\",\n  \"isbn\": \"9780747532743\",\n  \"description\": \"The first book in the Harry Potter series\",\n  \"publishYear\": 1997,\n  \"categories\": \"Fantasy\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/books",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"books"
+							]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status is 201', () => pm.response.to.have.status(201));",
+									"pm.test('Has id — saved to bookId variable', () => {",
+									"    const body = pm.response.json();",
+									"    pm.expect(body.id).to.not.be.undefined;",
+									"    pm.collectionVariables.set('bookId', body.id);",
+									"    console.log('Saved bookId:', body.id);",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "3. Create Book - The Lord of the Rings",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"The Lord of the Rings\",\n  \"authors\": \"J.R.R. Tolkien\",\n  \"isbn\": \"9780618640157\",\n  \"description\": \"An epic high-fantasy novel\",\n  \"publishYear\": 1954,\n  \"categories\": \"Fantasy\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/books",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"books"
+							]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status is 201', () => pm.response.to.have.status(201));",
+									"pm.test('Title matches', () => {",
+									"    pm.expect(pm.response.json().title).to.eql('The Lord of the Rings');",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "4. Create Book - The Great Gatsby",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"The Great Gatsby\",\n  \"authors\": \"F. Scott Fitzgerald\",\n  \"isbn\": \"9780743273565\",\n  \"description\": \"A novel about the American dream\",\n  \"publishYear\": 1925,\n  \"categories\": \"Classic Fiction\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/books",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"books"
+							]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status is 201', () => pm.response.to.have.status(201));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "5. Get Book by ID",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/books/{{bookId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"books",
+								"{{bookId}}"
+							]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status is 200', () => pm.response.to.have.status(200));",
+									"pm.test('Has id field', () => {",
+									"    const body = pm.response.json();",
+									"    pm.expect(body.id).to.not.be.undefined;",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "6. Search by Title",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/books/search?title=Harry",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"books",
+								"search"
+							],
+							"query": [
+								{
+									"key": "title",
+									"value": "Harry"
+								}
+							]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status is 200', () => pm.response.to.have.status(200));",
+									"pm.test('Returns Harry Potter', () => {",
+									"    const body = pm.response.json();",
+									"    pm.expect(body.length).to.be.greaterThan(0);",
+									"    pm.expect(body[0].title).to.include('Harry');",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "7. Search by Author",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/books/search?author=Tolkien",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"books",
+								"search"
+							],
+							"query": [
+								{
+									"key": "author",
+									"value": "Tolkien"
+								}
+							]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status is 200', () => pm.response.to.have.status(200));",
+									"pm.test('Found Tolkien book', () => {",
+									"    const body = pm.response.json();",
+									"    pm.expect(body.length).to.be.greaterThan(0);",
+									"    pm.expect(body[0].authors).to.include('Tolkien');",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "8. Search by Title + Author",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/books/search?title=Lord&author=Tolkien",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"books",
+								"search"
+							],
+							"query": [
+								{
+									"key": "title",
+									"value": "Lord"
+								},
+								{
+									"key": "author",
+									"value": "Tolkien"
+								}
+							]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status is 200', () => pm.response.to.have.status(200));",
+									"pm.test('Correct result', () => {",
+									"    const body = pm.response.json();",
+									"    pm.expect(body.length).to.be.greaterThan(0);",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "9. Update Book",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Harry Potter and the Chamber of Secrets\",\n  \"authors\": \"J.K. Rowling\",\n  \"isbn\": \"9780747538493\",\n  \"description\": \"The second book in the Harry Potter series\",\n  \"publishYear\": 1998,\n  \"categories\": \"Fantasy\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/books/{{bookId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"books",
+								"{{bookId}}"
+							]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status is 200', () => pm.response.to.have.status(200));",
+									"pm.test('Title updated', () => {",
+									"    pm.expect(pm.response.json().title).to.eql('Harry Potter and the Chamber of Secrets');",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "10. Delete Book",
+					"request": {
+						"method": "DELETE",
+						"url": {
+							"raw": "{{baseUrl}}/api/books/{{bookId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"books",
+								"{{bookId}}"
+							]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status is 204', () => pm.response.to.have.status(204));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "11. Validation Test - Missing Title",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"authors\": \"Unknown Author\",\n  \"isbn\": \"1234567890\",\n  \"publishYear\": 2020\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/books",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"books"
+							]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status is 400 — validation works', () => pm.response.to.have.status(400));"
+								]
+							}
+						}
+					]
+				}
+			]
+		}
+	]
+}

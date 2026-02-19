@@ -1,0 +1,18 @@
+spring:
+  application:
+    name: library-service
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+
+logging:
+  level:
+    com.library: DEBUG
+    org.springframework.web: INFO
+
+server:
+  port: 8080
