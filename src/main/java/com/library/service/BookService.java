@@ -10,8 +10,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -26,29 +26,28 @@ public class BookService {
         return bookRepository.findAll()
                 .stream()
                 .map(bookMapper::toDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public BookDTO findById(UUID id) {
         log.debug("Finding book by id: {}", id);
         Book book = bookRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Book not found with id: " + id));
+                .orElseThrow(() -> new NoSuchElementException("Book not found with id: " + id));
         return bookMapper.toDTO(book);
     }
 
     public List<BookDTO> searchBooks(String title, String author) {
         log.debug("Searching books with title: {}, author: {}", title, author);
-
         if (title != null) {
             return bookRepository.findByTitleContainingIgnoreCase(title)
                     .stream()
                     .map(bookMapper::toDTO)
-                    .collect(Collectors.toList());
+                    .toList();
         } else if (author != null) {
             return bookRepository.findByAuthorsContainingIgnoreCase(author)
                     .stream()
                     .map(bookMapper::toDTO)
-                    .collect(Collectors.toList());
+                    .toList();
         } else {
             return findAll();
         }
@@ -64,17 +63,15 @@ public class BookService {
     public BookDTO update(UUID id, BookCreateDTO bookCreateDTO) {
         log.debug("Updating book with id: {}", id);
         Book book = bookRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Book not found with id: " + id));
-        
+                .orElseThrow(() -> new NoSuchElementException("Book not found with id: " + id));
         bookMapper.updateEntityFromDTO(bookCreateDTO, book);
-        Book updated = bookRepository.save(book);
-        return bookMapper.toDTO(updated);
+        return bookMapper.toDTO(bookRepository.save(book));
     }
 
     public void delete(UUID id) {
         log.debug("Deleting book with id: {}", id);
         if (!bookRepository.existsById(id)) {
-            throw new RuntimeException("Book not found with id: " + id);
+            throw new NoSuchElementException("Book not found with id: " + id);
         }
         bookRepository.deleteById(id);
     }
