@@ -1,0 +1,103 @@
+Название проекта: Библиотечная система — Lending / Library Management
+
+Краткая идея: Система учёта книг в библиотеке: каталог изданий, конкретные экземпляры (копии), учёт пользователей (читателей), выдач/возвратов, бронирование копий и начисление штрафов за просрочку. Включает REST API, слой доступа к данным (JPA), кеширование популярных запросов, обработку ошибок и логирование, batch-задачи (ночной расчёт штрафов / архивирование старых записей), механизм конкурентного доступа к копиям, SPA-клиент и деплой в контейнере.
+
+Покрытие по лабораторным (коротко):
+
+Basic REST — CRUD для книг, копий, пользователей, операций выдач/возвратов.
+
+JPA — модель из минимум 5 сущностей и связи OneToMany, ManyToMany.
+
+Caching — кеш популярных книг/результатов поиска.
+
+Error handling — валидация, глобальные ошибки, обработка бизнес-исключений (недоступная копия, превышение лимита выдач).
+
+Batch — ночная задача по начислению штрафов и архивации.
+
+Concurrency — защита от гонок при попытке выдать одну и ту же копию разным пользователям (optimistic/pessimistic locking).
+
+Client — SPA (React/Vue) личный кабинет и поиск; интеграция с API.
+
+Deploy — Docker, Docker Compose, CI/CD (GitHub Actions), миграции БД.
+
+Обязательное требование: минимум 5 сущностей (см. ниже).
+
+Основные сущности (минимум 5):
+
+Book — книга/издание (логическая сущность)
+
+id (UUID/int)
+
+title
+
+authors (строка или отдельная сущность)
+
+isbn
+
+description
+
+publishYear
+
+categories/tags
+
+relationships: OneToMany -> Copy
+
+Copy — конкретный экземпляр книги
+
+id
+
+barcode
+
+book_id (FK)
+
+status (AVAILABLE, LOANED, RESERVED, LOST)
+
+location (shelf)
+
+User — читатель / сотрудник
+
+id
+
+fullName
+
+email
+
+registrationDate
+
+finesBalance
+
+roles (USER, LIBRARIAN)
+
+Loan — запись о выдаче копии
+
+id
+
+copy_id (FK)
+
+user_id (FK)
+
+loanDate
+
+dueDate
+
+returnDate (nullable)
+
+status (ACTIVE, CLOSED, OVERDUE)
+
+Fine — штраф за просрочку
+
+id
+
+user_id (FK)
+
+loan_id (FK)
+
+amount
+
+issuedDate
+
+paid (bool)
+
+(Опционально: Reservation, Author как отдельная сущность, ArchiveRecord и т.д.)
+
+Короткая ER-логика: Book 1..* — Copy; Copy 1..* — Loan; User 1..* — Loan; Loan 0..1 — Fine (одна выдача — один штраф).
