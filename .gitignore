@@ -28,3 +28,5 @@ spring-shell.log
 .env
 application-local.yml
 application-local.properties
+
+*.txt
