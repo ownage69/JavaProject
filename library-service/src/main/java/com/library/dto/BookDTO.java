@@ -10,10 +10,10 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class BookDTO {
+
     private UUID id;
     private String title;
     private String authors;
-    private String isbn;
     private String description;
     private Integer publishYear;
     private String categories;

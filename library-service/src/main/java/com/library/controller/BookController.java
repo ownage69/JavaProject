@@ -11,7 +11,15 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.UUID;
@@ -25,14 +33,14 @@ public class BookController {
     private final BookService bookService;
 
     @GetMapping
-    @Operation(summary = "Get all books", description = "Retrieve a list of all books in the library")
+    @Operation(summary = "Get all books")
     @ApiResponse(responseCode = "200", description = "Successfully retrieved list")
     public ResponseEntity<List<BookDTO>> getAllBooks() {
         return ResponseEntity.ok(bookService.findAll());
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "Get book by ID", description = "Retrieve a specific book by its UUID")
+    @Operation(summary = "Get book by ID")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Book found"),
         @ApiResponse(responseCode = "404", description = "Book not found")
@@ -42,10 +50,8 @@ public class BookController {
     }
 
     @GetMapping("/search")
-    @Operation(summary = "Search books", description = "Search books by title and/or author using query parameters")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Search results returned (may be empty list)")
-    })
+    @Operation(summary = "Search books by title or author")
+    @ApiResponse(responseCode = "200", description = "Search results returned")
     public ResponseEntity<List<BookDTO>> searchBooks(
             @RequestParam(required = false) String title,
             @RequestParam(required = false) String author) {
@@ -53,22 +59,20 @@ public class BookController {
     }
 
     @PostMapping
-    @Operation(summary = "Create new book", description = "Add a new book to the library catalog")
+    @Operation(summary = "Create new book")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "201", description = "Book created successfully"),
         @ApiResponse(responseCode = "400", description = "Invalid input data")
     })
     public ResponseEntity<BookDTO> createBook(@Valid @RequestBody BookCreateDTO bookCreateDTO) {
-        BookDTO created = bookService.create(bookCreateDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+        return ResponseEntity.status(HttpStatus.CREATED).body(bookService.create(bookCreateDTO));
     }
 
     @PutMapping("/{id}")
-    @Operation(summary = "Update book", description = "Update an existing book's information")
+    @Operation(summary = "Update book")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Book updated successfully"),
-        @ApiResponse(responseCode = "404", description = "Book not found"),
-        @ApiResponse(responseCode = "400", description = "Invalid input data")
+        @ApiResponse(responseCode = "404", description = "Book not found")
     })
     public ResponseEntity<BookDTO> updateBook(
             @PathVariable UUID id,
@@ -77,7 +81,7 @@ public class BookController {
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Delete book", description = "Remove a book from the library catalog")
+    @Operation(summary = "Delete book")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "204", description = "Book deleted successfully"),
         @ApiResponse(responseCode = "404", description = "Book not found")

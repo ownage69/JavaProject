@@ -38,13 +38,8 @@ public class BookService {
 
     public List<BookDTO> searchBooks(String title, String author) {
         log.debug("Searching books with title: {}, author: {}", title, author);
-        
-        if (title != null && author != null) {
-            return bookRepository.findByTitleContainingIgnoreCaseAndAuthorsContainingIgnoreCase(title, author)
-                    .stream()
-                    .map(bookMapper::toDTO)
-                    .collect(Collectors.toList());
-        } else if (title != null) {
+
+        if (title != null) {
             return bookRepository.findByTitleContainingIgnoreCase(title)
                     .stream()
                     .map(bookMapper::toDTO)
