@@ -1,18 +1,18 @@
 package com.library.mapper;
 
-import com.library.dto.BookCreateDTO;
-import com.library.dto.BookDTO;
+import com.library.dto.BookCreateDto;
+import com.library.dto.BookDto;
 import com.library.entity.Book;
 import org.springframework.stereotype.Component;
 
 @Component
 public class BookMapper {
 
-    public BookDTO toDTO(Book book) {
+    public BookDto toDto(Book book) {
         if (book == null) {
             return null;
         }
-        return new BookDTO(
+        return new BookDto(
                 book.getId(),
                 book.getTitle(),
                 book.getAuthors(),
@@ -22,21 +22,21 @@ public class BookMapper {
         );
     }
 
-    public Book toEntity(BookCreateDTO bookCreateDTO) {
-        if (bookCreateDTO == null) {
+    public Book toEntity(BookCreateDto bookCreateDto) {
+        if (bookCreateDto == null) {
             return null;
         }
         return new Book(
                 null,
-                bookCreateDTO.getTitle(),
-                bookCreateDTO.getAuthors(),
-                bookCreateDTO.getDescription(),
-                bookCreateDTO.getPublishYear(),
-                bookCreateDTO.getCategories()
+                bookCreateDto.getTitle(),
+                bookCreateDto.getAuthors(),
+                bookCreateDto.getDescription(),
+                bookCreateDto.getPublishYear(),
+                bookCreateDto.getCategories()
         );
     }
 
-    public void updateEntityFromDTO(BookCreateDTO dto, Book book) {
+    public void updateEntityFromDto(BookCreateDto dto, Book book) {
         if (dto == null || book == null) {
             return;
         }

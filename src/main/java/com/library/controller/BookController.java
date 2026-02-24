@@ -1,13 +1,15 @@
 package com.library.controller;
 
-import com.library.dto.BookCreateDTO;
-import com.library.dto.BookDTO;
+import com.library.dto.BookCreateDto;
+import com.library.dto.BookDto;
 import com.library.service.BookService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,9 +23,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-import java.util.UUID;
-
 @RestController
 @RequestMapping("/api/books")
 @RequiredArgsConstructor
@@ -35,7 +34,7 @@ public class BookController {
     @GetMapping
     @Operation(summary = "Get all books")
     @ApiResponse(responseCode = "200", description = "Successfully retrieved list")
-    public ResponseEntity<List<BookDTO>> getAllBooks() {
+    public ResponseEntity<List<BookDto>> getAllBooks() {
         return ResponseEntity.ok(bookService.findAll());
     }
 
@@ -45,14 +44,14 @@ public class BookController {
         @ApiResponse(responseCode = "200", description = "Book found"),
         @ApiResponse(responseCode = "404", description = "Book not found")
     })
-    public ResponseEntity<BookDTO> getBookById(@PathVariable UUID id) {
+    public ResponseEntity<BookDto> getBookById(@PathVariable UUID id) {
         return ResponseEntity.ok(bookService.findById(id));
     }
 
     @GetMapping("/search")
     @Operation(summary = "Search books by author")
     @ApiResponse(responseCode = "200", description = "Search results returned")
-    public ResponseEntity<List<BookDTO>> searchBooksByAuthor(
+    public ResponseEntity<List<BookDto>> searchBooksByAuthor(
             @RequestParam(required = false) String author) {
         return ResponseEntity.ok(bookService.searchBooksByAuthor(author));
     }
@@ -63,8 +62,8 @@ public class BookController {
         @ApiResponse(responseCode = "201", description = "Book created successfully"),
         @ApiResponse(responseCode = "400", description = "Invalid input data")
     })
-    public ResponseEntity<BookDTO> createBook(@Valid @RequestBody BookCreateDTO bookCreateDTO) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(bookService.create(bookCreateDTO));
+    public ResponseEntity<BookDto> createBook(@Valid @RequestBody BookCreateDto bookCreateDto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(bookService.create(bookCreateDto));
     }
 
     @PutMapping("/{id}")
@@ -73,10 +72,10 @@ public class BookController {
         @ApiResponse(responseCode = "200", description = "Book updated successfully"),
         @ApiResponse(responseCode = "404", description = "Book not found")
     })
-    public ResponseEntity<BookDTO> updateBook(
+    public ResponseEntity<BookDto> updateBook(
             @PathVariable UUID id,
-            @Valid @RequestBody BookCreateDTO bookCreateDTO) {
-        return ResponseEntity.ok(bookService.update(id, bookCreateDTO));
+            @Valid @RequestBody BookCreateDto bookCreateDto) {
+        return ResponseEntity.ok(bookService.update(id, bookCreateDto));
     }
 
     @DeleteMapping("/{id}")
