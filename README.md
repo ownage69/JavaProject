@@ -41,12 +41,6 @@
 - Эндпоинт: `/api/books/{id}`
 - Описание: удаляет книгу по ID.
 
-## Реализация требований по эндпоинтам
-- `GET` с `@PathVariable`: реализован (`/api/books/{id}`).
-- `GET` с `@RequestParam`: реализован (`/api/books/search?author=...`).
-- `PUT`: реализован (`/api/books/{id}`).
-- `DELETE`: реализован (`/api/books/{id}`).
-
 ## Поля сущности Book
 - `id: UUID`
 - `title: String`
@@ -55,27 +49,5 @@
 - `publishYear: Integer`
 - `categories: String`
 
-## Запуск проекта
-1. Создать БД в PostgreSQL:
-```sql
-CREATE DATABASE library;
-```
-
-2. Настроить подключение в `src/main/resources/application.yml`:
-```yaml
-spring:
-  datasource:
-    url: jdbc:postgresql://localhost:5432/library
-    username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:190817}
-```
-
-3. Запустить приложение:
-```bash
-mvn spring-boot:run
-```
-
-## Проверка Checkstyle
-```bash
-mvn checkstyle:check
-```
+# SonarCloud
+https://sonarcloud.io/project/overview?id=ownage69_JavaProject
