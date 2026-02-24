@@ -50,12 +50,11 @@ public class BookController {
     }
 
     @GetMapping("/search")
-    @Operation(summary = "Search books by title or author")
+    @Operation(summary = "Search books by author")
     @ApiResponse(responseCode = "200", description = "Search results returned")
-    public ResponseEntity<List<BookDTO>> searchBooks(
-            @RequestParam(required = false) String title,
+    public ResponseEntity<List<BookDTO>> searchBooksByAuthor(
             @RequestParam(required = false) String author) {
-        return ResponseEntity.ok(bookService.searchBooks(title, author));
+        return ResponseEntity.ok(bookService.searchBooksByAuthor(author));
     }
 
     @PostMapping
