@@ -3,6 +3,8 @@ package com.library.mapper;
 import com.library.dto.BookCreateDto;
 import com.library.dto.BookDto;
 import com.library.entity.Book;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -12,13 +14,39 @@ public class BookMapper {
         if (book == null) {
             return null;
         }
+
+        Set<Long> authorIds = book.getAuthors()
+                .stream()
+                .map(author -> author.getId())
+                .collect(LinkedHashSet::new, LinkedHashSet::add, LinkedHashSet::addAll);
+
+        Set<String> authorNames = book.getAuthors()
+                .stream()
+                .map(author -> author.getFullName())
+                .collect(LinkedHashSet::new, LinkedHashSet::add, LinkedHashSet::addAll);
+
+        Set<Long> categoryIds = book.getCategories()
+                .stream()
+                .map(category -> category.getId())
+                .collect(LinkedHashSet::new, LinkedHashSet::add, LinkedHashSet::addAll);
+
+        Set<String> categoryNames = book.getCategories()
+                .stream()
+                .map(category -> category.getName())
+                .collect(LinkedHashSet::new, LinkedHashSet::add, LinkedHashSet::addAll);
+
         return new BookDto(
                 book.getId(),
                 book.getTitle(),
-                book.getAuthors(),
+                book.getIsbn(),
                 book.getDescription(),
                 book.getPublishYear(),
-                book.getCategories()
+                book.getPublisher().getId(),
+                book.getPublisher().getName(),
+                authorIds,
+                authorNames,
+                categoryIds,
+                categoryNames
         );
     }
 
@@ -26,24 +54,23 @@ public class BookMapper {
         if (bookCreateDto == null) {
             return null;
         }
-        return new Book(
-                null,
-                bookCreateDto.getTitle(),
-                bookCreateDto.getAuthors(),
-                bookCreateDto.getDescription(),
-                bookCreateDto.getPublishYear(),
-                bookCreateDto.getCategories()
-        );
+
+        Book book = new Book();
+        book.setTitle(bookCreateDto.getTitle());
+        book.setIsbn(bookCreateDto.getIsbn());
+        book.setDescription(bookCreateDto.getDescription());
+        book.setPublishYear(bookCreateDto.getPublishYear());
+        return book;
     }
 
-    public void updateEntityFromDto(BookCreateDto dto, Book book) {
-        if (dto == null || book == null) {
+    public void updateEntityFromDto(BookCreateDto bookCreateDto, Book book) {
+        if (bookCreateDto == null || book == null) {
             return;
         }
-        book.setTitle(dto.getTitle());
-        book.setAuthors(dto.getAuthors());
-        book.setDescription(dto.getDescription());
-        book.setPublishYear(dto.getPublishYear());
-        book.setCategories(dto.getCategories());
+
+        book.setTitle(bookCreateDto.getTitle());
+        book.setIsbn(bookCreateDto.getIsbn());
+        book.setDescription(bookCreateDto.getDescription());
+        book.setPublishYear(bookCreateDto.getPublishYear());
     }
 }

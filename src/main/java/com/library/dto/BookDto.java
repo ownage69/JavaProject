@@ -1,6 +1,6 @@
 package com.library.dto;
 
-import java.util.UUID;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,10 +10,15 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class BookDto {
 
-    private UUID id;
+    private Long id;
     private String title;
-    private String authors;
+    private String isbn;
     private String description;
     private Integer publishYear;
-    private String categories;
+    private Long publisherId;
+    private String publisherName;
+    private Set<Long> authorIds;
+    private Set<String> authorNames;
+    private Set<Long> categoryIds;
+    private Set<String> categoryNames;
 }
