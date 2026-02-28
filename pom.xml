@@ -24,7 +24,7 @@
         <lombok.version>1.18.30</lombok.version>
         <springdoc.version>2.3.0</springdoc.version>
         <sonar-maven-plugin.version>4.0.0.4121</sonar-maven-plugin.version>
-        <sonar.organization>ownage69</sonar.organization>
+        <sonar.organization>ownage699</sonar.organization>
         <sonar.projectKey>ownage69_JavaProject</sonar.projectKey>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     </properties>
