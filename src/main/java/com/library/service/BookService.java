@@ -63,7 +63,10 @@ public class BookService {
     @Transactional(readOnly = true)
     public List<BookDto> searchBooksByAuthor(String author) {
         if (author == null || author.isBlank()) {
-            return findAll();
+            return bookRepository.findAllWithGraph()
+                    .stream()
+                    .map(bookMapper::toDto)
+                    .toList();
         }
 
         return bookRepository.findByAuthorName(author)
