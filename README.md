@@ -1,53 +1,76 @@
 # Библиотечная система
 
 ## Описание проекта
-Данный проект представляет собой RESTful веб-приложение, разработанное с использованием Spring Boot.
-Оно позволяет выполнять базовые CRUD-операции (создание, чтение, обновление, удаление) для сущности `Book`.
-
-В качестве хранилища данных используется PostgreSQL.
-Приложение построено по многослойной архитектуре: `Controller -> Service -> Repository`.
-Для обмена данными между API и бизнес-слоем используются DTO.
+Данный проект представляет собой RESTful веб-приложение на `Spring Boot` для управления библиотекой.
+В качестве хранилища данных используется `PostgreSQL`, доступ к данным реализован через `JPA (Hibernate/Spring Data)`.
+Приложение построено по многослойной архитектуре `Controller -> Service -> Repository` и использует `DTO + mapper`.
 
 ## Выполняемые функции
-Приложение предоставляет REST API для управления книгами:
+Приложение предоставляет CRUD API для сущностей:
+- `Book`
+- `Author`
+- `Category`
+- `Publisher`
+- `Reader`
+- `Loan`
 
-### 1. Получение списка всех книг
-- Метод: `GET`
-- Эндпоинт: `/api/books`
-- Описание: возвращает список всех книг.
+Основные примеры эндпоинтов:
+- `GET /api/books` — получить все книги.
+- `GET /api/books/{id}` — получить книгу по ID (`@PathVariable`).
+- `GET /api/books/search?author=...` — поиск книг по автору (`@RequestParam`).
+- `POST /api/books` — создать книгу.
+- `PUT /api/books/{id}` — обновить книгу.
+- `DELETE /api/books/{id}` — удалить книгу.
 
-### 2. Получение книги по ID
-- Метод: `GET`
-- Эндпоинт: `/api/books/{id}`
-- Описание: возвращает книгу по уникальному идентификатору.
+## Модель данных
+Сущности:
+1. `Book` (книга)
+2. `Author` (автор)
+3. `Category` (категория)
+4. `Publisher` (издательство)
+5. `Reader` (читатель)
+6. `Loan` (выдача книги)
 
-### 3. Поиск книг по автору (`@RequestParam`)
-- Метод: `GET`
-- Эндпоинт: `/api/books/search?author=...`
-- Описание: возвращает книги, у которых в поле `authors` содержится переданное значение.
+Связи:
+- `Publisher (OneToMany) -> Book`
+- `Book (ManyToMany) <-> Author` через `book_authors`
+- `Book (ManyToMany) <-> Category` через `book_categories`
+- `Reader (OneToMany) -> Loan`
+- `Book (OneToMany) -> Loan`
 
-### 4. Добавление новой книги
-- Метод: `POST`
-- Эндпоинт: `/api/books`
-- Описание: принимает JSON с новой книгой, сохраняет и возвращает созданную запись.
+## Технические детали
+1. Подключение реляционной БД:
+- Используется `PostgreSQL`.
+- Параметры подключения задаются в `application.yml` (с поддержкой env vars).
 
-### 5. Обновление книги
-- Метод: `PUT`
-- Эндпоинт: `/api/books/{id}`
-- Описание: обновляет книгу по ID.
+2. `CascadeType` и `FetchType`:
+- Для связей в основном используется `FetchType.LAZY`.
+- Для `ManyToMany` в `Book` используется `CascadeType.PERSIST, CascadeType.MERGE`.
+- Для `Reader -> Loan` используется `CascadeType.ALL` и `orphanRemoval=true`.
 
-### 6. Удаление книги
-- Метод: `DELETE`
-- Эндпоинт: `/api/books/{id}`
-- Описание: удаляет книгу по ID.
+3. Демонстрация проблемы N+1 и решения:
+- Проблема: `GET /api/books/n-plus-one` (обычный `findAll()`).
+- Решение: `GET /api/books/with-entity-graph` (репозиторий с `@EntityGraph`).
 
-## Поля сущности Book
-- `id: UUID`
-- `title: String`
-- `authors: String`
-- `description: String`
-- `publishYear: Integer`
-- `categories: String`
+4. Демонстрация транзакций:
+- Без транзакции: `POST /api/scenarios/without-transaction`  
+  при ошибке на несуществующем `authorId` часть данных сохраняется.
+- С транзакцией: `POST /api/scenarios/with-transaction`  
+  при той же ошибке изменения откатываются полностью.
 
-# SonarCloud
-https://sonarcloud.io/project/overview?id=ownage69_JavaProject
+## Запуск проекта
+1. Создать БД:
+```sql
+CREATE DATABASE library;
+```
+2. Проверить `src/main/resources/application.yml`.
+3. Запустить приложение:
+```bash
+mvn spring-boot:run
+```
+
+## Swagger UI
+`http://localhost:8080/swagger-ui.html`
+
+## SonarCloud
+`https://sonarcloud.io/project/overview?id=ownage69_JavaProject`
