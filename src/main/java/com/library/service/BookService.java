@@ -32,6 +32,8 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class BookService {
 
+    private static final String NATIVE_QUERY_TYPE = "native";
+
     private final BookRepository bookRepository;
     private final PublisherRepository publisherRepository;
     private final AuthorRepository authorRepository;
@@ -104,7 +106,14 @@ public class BookService {
             int page,
             int size
     ) {
-        return filterBooks(authorLastName, categoryName, publisherCountry, page, size, "native");
+        return filterBooks(
+                authorLastName,
+                categoryName,
+                publisherCountry,
+                page,
+                size,
+                NATIVE_QUERY_TYPE
+        );
     }
 
     public BookDto create(BookCreateDto bookCreateDto) {
@@ -195,7 +204,7 @@ public class BookService {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
         Page<Book> bookPage;
-        if ("native".equals(queryType)) {
+        if (NATIVE_QUERY_TYPE.equals(queryType)) {
             bookPage = bookRepository.findByFiltersNative(
                     normalizedAuthorLastName,
                     normalizedCategoryName,
@@ -211,7 +220,7 @@ public class BookService {
             );
         }
 
-        List<Book> books = "native".equals(queryType)
+        List<Book> books = NATIVE_QUERY_TYPE.equals(queryType)
                 ? loadBooksForNativePage(bookPage)
                 : bookPage.getContent();
         BookPageDto response = new BookPageDto(
