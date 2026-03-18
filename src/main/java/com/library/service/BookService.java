@@ -36,6 +36,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class BookService {
 
+    private static final String BOOK_NOT_FOUND_WITH_ID = "Book not found with id: ";
+
     private final BookRepository bookRepository;
     private final PublisherRepository publisherRepository;
     private final AuthorRepository authorRepository;
@@ -71,7 +73,7 @@ public class BookService {
     @Transactional(readOnly = true)
     public BookDto findById(Long id) {
         Book book = bookRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Book not found with id: " + id));
+                .orElseThrow(() -> new NoSuchElementException(BOOK_NOT_FOUND_WITH_ID + id));
         return bookMapper.toDto(book);
     }
 
@@ -172,7 +174,7 @@ public class BookService {
     @Transactional
     public BookDto update(Long id, BookCreateDto bookCreateDto) {
         Book book = bookRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Book not found with id: " + id));
+                .orElseThrow(() -> new NoSuchElementException(BOOK_NOT_FOUND_WITH_ID + id));
 
         validateUniqueIsbn(bookCreateDto.getIsbn(), id);
         bookMapper.updateEntityFromDto(bookCreateDto, book);
@@ -187,7 +189,7 @@ public class BookService {
     @Transactional
     public void delete(Long id) {
         Book book = bookRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Book not found with id: " + id));
+                .orElseThrow(() -> new NoSuchElementException(BOOK_NOT_FOUND_WITH_ID + id));
         final long removedLoans = loanRepository.deleteByBookId(id);
         book.getAuthors().clear();
         book.getCategories().clear();
