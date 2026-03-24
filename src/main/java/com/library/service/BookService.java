@@ -100,18 +100,7 @@ public class BookService {
             int page,
             int size
     ) {
-        long startedAt = System.currentTimeMillis();
-        log.debug(
-                "Выполнение метода: BookService.filterBooksJpql с аргументами: "
-                        + "[authorLastName={}, categoryName={}, "
-                        + "publisherCountry={}, page={}, size={}]",
-                authorLastName,
-                categoryName,
-                publisherCountry,
-                page,
-                size
-        );
-        BookPageDto response = filterBooks(
+        return filterBooks(
                 authorLastName,
                 categoryName,
                 publisherCountry,
@@ -119,11 +108,6 @@ public class BookService {
                 size,
                 BookFilterQueryType.JPQL
         );
-        log.debug(
-                "Метод BookService.filterBooksJpql выполнен за {} мс",
-                System.currentTimeMillis() - startedAt
-        );
-        return response;
     }
 
     @Transactional(readOnly = true)
@@ -134,18 +118,7 @@ public class BookService {
             int page,
             int size
     ) {
-        long startedAt = System.currentTimeMillis();
-        log.debug(
-                "Выполнение метода: BookService.filterBooksNative с аргументами: "
-                        + "[authorLastName={}, categoryName={}, "
-                        + "publisherCountry={}, page={}, size={}]",
-                authorLastName,
-                categoryName,
-                publisherCountry,
-                page,
-                size
-        );
-        BookPageDto response = filterBooks(
+        return filterBooks(
                 authorLastName,
                 categoryName,
                 publisherCountry,
@@ -153,11 +126,6 @@ public class BookService {
                 size,
                 BookFilterQueryType.NATIVE
         );
-        log.debug(
-                "Метод BookService.filterBooksNative выполнен за {} мс",
-                System.currentTimeMillis() - startedAt
-        );
-        return response;
     }
 
     @Transactional
