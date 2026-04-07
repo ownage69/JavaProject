@@ -120,6 +120,25 @@ class BookServiceTest {
     }
 
     @Test
+    void findByIdShouldThrowWhenBookMissing() {
+        when(bookRepository.findById(404L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> bookService.findById(404L))
+                .isInstanceOf(NoSuchElementException.class)
+                .hasMessage("Book not found with id: 404");
+    }
+
+    @Test
+    void searchBooksByAuthorShouldReturnAllBooksWhenFilterNull() {
+        when(bookRepository.findAllWithGraph()).thenReturn(List.of(createFullBook(44L, "Dracula")));
+
+        List<BookDto> result = bookService.searchBooksByAuthor(null);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getTitle()).isEqualTo("Dracula");
+    }
+
+    @Test
     void searchBooksByAuthorShouldReturnAllBooksWhenFilterBlank() {
         when(bookRepository.findAllWithGraph()).thenReturn(List.of(createFullBook(5L, "It")));
 
@@ -182,6 +201,18 @@ class BookServiceTest {
         assertThat(result.getQueryType()).isEqualTo("jpql");
         assertThat(result.getContent()).extracting(BookDto::getTitle).containsExactly("Animal Farm");
         verify(bookFilterIndex).put(any(BookFilterCacheKey.class), any(BookPageDto.class));
+    }
+
+    @Test
+    void filterBooksJpqlShouldTreatBlankFiltersAsEmptyStrings() {
+        when(bookFilterIndex.get(any(BookFilterCacheKey.class))).thenReturn(Optional.empty());
+        when(bookRepository.findByFiltersJpql(eq(""), eq(""), eq(""), any(Pageable.class)))
+                .thenReturn(Page.empty(PageRequest.of(0, 5)));
+
+        BookPageDto result = bookService.filterBooksJpql("   ", "   ", "   ", 0, 5);
+
+        assertThat(result.getContent()).isEmpty();
+        assertThat(result.getQueryType()).isEqualTo("jpql");
     }
 
     @Test
@@ -255,24 +286,85 @@ class BookServiceTest {
 
     @Test
     void createShouldThrowWhenDuplicateIsbnExists() {
+        BookCreateDto createDto = createBookCreateDto();
         when(bookRepository.existsByIsbn("9780306406157")).thenReturn(true);
 
-        assertThatThrownBy(() -> bookService.create(createBookCreateDto()))
+        assertThatThrownBy(() -> bookService.create(createDto))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Book with ISBN '9780306406157' already exists");
     }
 
     @Test
     void createShouldThrowWhenAuthorIsMissing() {
+        BookCreateDto createDto = createBookCreateDto();
         when(bookRepository.existsByIsbn("9780306406157")).thenReturn(false);
         when(publisherRepository.findById(9L))
                 .thenReturn(Optional.of(createPublisher(9L, "Publisher", "BY")));
         when(authorRepository.findAllById(Set.of(1L, 2L)))
                 .thenReturn(List.of(createAuthor(1L, "George", "Orwell")));
 
-        assertThatThrownBy(() -> bookService.create(createBookCreateDto()))
+        assertThatThrownBy(() -> bookService.create(createDto))
                 .isInstanceOf(NoSuchElementException.class)
                 .hasMessage("One or more authors not found");
+    }
+
+    @Test
+    void createShouldThrowWhenPublisherMissing() {
+        BookCreateDto createDto = createBookCreateDto();
+        when(bookRepository.existsByIsbn("9780306406157")).thenReturn(false);
+        when(publisherRepository.findById(9L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> bookService.create(createDto))
+                .isInstanceOf(NoSuchElementException.class)
+                .hasMessage("Publisher not found with id: 9");
+    }
+
+    @Test
+    void createShouldThrowWhenCategoryIsMissing() {
+        BookCreateDto createDto = createBookCreateDto();
+        when(bookRepository.existsByIsbn("9780306406157")).thenReturn(false);
+        when(publisherRepository.findById(9L))
+                .thenReturn(Optional.of(createPublisher(9L, "Publisher", "BY")));
+        when(authorRepository.findAllById(Set.of(1L, 2L))).thenReturn(List.of(
+                createAuthor(1L, "George", "Orwell"),
+                createAuthor(2L, "Ray", "Bradbury")
+        ));
+        when(categoryRepository.findAllById(Set.of(3L))).thenReturn(List.of());
+
+        assertThatThrownBy(() -> bookService.create(createDto))
+                .isInstanceOf(NoSuchElementException.class)
+                .hasMessage("One or more categories not found");
+    }
+
+    @Test
+    void createShouldHandleNullIsbnWhenServiceCalledDirectly() {
+        BookCreateDto createDto = new BookCreateDto(
+                "Book Without Isbn",
+                null,
+                "Description",
+                2024,
+                9L,
+                Set.of(1L),
+                Set.of(3L)
+        );
+        Publisher publisher = createPublisher(9L, "Publisher", "BY");
+        Author author = createAuthor(1L, "George", "Orwell");
+        Category category = createCategory(3L, "Classic");
+
+        when(bookRepository.existsByIsbn(null)).thenReturn(false);
+        when(publisherRepository.findById(9L)).thenReturn(Optional.of(publisher));
+        when(authorRepository.findAllById(Set.of(1L))).thenReturn(List.of(author));
+        when(categoryRepository.findAllById(Set.of(3L))).thenReturn(List.of(category));
+        when(bookRepository.save(any(Book.class))).thenAnswer(invocation -> {
+            Book savedBook = invocation.getArgument(0);
+            savedBook.setId(77L);
+            return savedBook;
+        });
+
+        BookDto result = bookService.create(createDto);
+
+        assertThat(result.getId()).isEqualTo(77L);
+        assertThat(result.getIsbn()).isNull();
     }
 
     @Test
@@ -309,6 +401,16 @@ class BookServiceTest {
         assertThat(result.getId()).isEqualTo(12L);
         assertThat(result.getPublisherName()).isEqualTo("New Publisher");
         verify(bookFilterIndex).invalidateAll();
+    }
+
+    @Test
+    void updateShouldThrowWhenBookMissing() {
+        BookCreateDto updateDto = createBookCreateDto();
+        when(bookRepository.findById(120L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> bookService.update(120L, updateDto))
+                .isInstanceOf(NoSuchElementException.class)
+                .hasMessage("Book not found with id: 120");
     }
 
     @Test
