@@ -19,6 +19,8 @@
 - `GET /api/books/{id}` — получить книгу по ID (`@PathVariable`).
 - `GET /api/books/search?author=...` — поиск книг по автору (`@RequestParam`).
 - `POST /api/books` — создать книгу.
+- `POST /api/loans/bulk/without-transaction` — массово создать выдачи без общей транзакции.
+- `POST /api/loans/bulk/with-transaction` — массово создать выдачи в одной транзакции.
 - `PUT /api/books/{id}` — обновить книгу.
 - `DELETE /api/books/{id}` — удалить книгу.
 
@@ -57,6 +59,10 @@
   при ошибке на несуществующем `authorId` часть данных сохраняется.
 - С транзакцией: `POST /api/scenarios/with-transaction`  
   при той же ошибке изменения откатываются полностью.
+- Для bulk-операции выдачи книг:
+  - `POST /api/loans/bulk/without-transaction`
+  - `POST /api/loans/bulk/with-transaction`
+  - при ошибке на втором элементе списка видно различие в состоянии таблицы `loans`.
 
 5. Data caching:
 - `GET /api/books/filter/jpql` — сложный фильтр по вложенным сущностям через `@Query` (`JPQL`).
@@ -95,6 +101,68 @@
 - `totalElements` — общее количество найденных книг;
 - `totalPages` — общее количество страниц;
 - `queryType` — тип использованного запроса (`jpql` или `native`).
+
+## Лабораторная 4
+Реализованы требования по теме `Bulk-операции, Stream API, Optional и транзакции`:
+- бизнес-операция массовой выдачи книг через `POST` со списком объектов;
+- два режима выполнения bulk-операции:
+  - `POST /api/loans/bulk/without-transaction`
+  - `POST /api/loans/bulk/with-transaction`
+- использование `Stream API` и `Optional` в `LoanService`;
+- бизнес-правило: одна книга не может иметь более одной активной выдачи;
+- unit-тесты сервисного слоя на `Mockito`.
+
+Для пошаговой демонстрации лабораторной работы см. `LAB4_DEMO.md`.
+
+## Unit-тесты сервисов
+`Mockito`-тестами покрыты все сервисы проекта:
+- `AuthorService`
+- `BookService`
+- `CategoryService`
+- `LoanService`
+- `PublisherService`
+- `ReaderService`
+- `ScenarioService`
+
+Запуск:
+```bash
+mvn test
+```
+
+## Покрытие кода и Sonar
+Для покрытия подключён `JaCoCo`:
+- XML-отчёт для Sonar: `target/site/jacoco/jacoco.xml`
+- HTML-отчёт для локального просмотра: `target/site/jacoco/index.html`
+
+Сгенерировать отчёт локально:
+```bash
+mvn clean verify
+```
+
+В `SonarCloud` передаётся coverage по `JaCoCo XML report`. Для метрики покрытия исключён boilerplate-слой:
+- `controller`
+- `dto`
+- `entity`
+- `repository`
+- `mapper`
+- `cache`
+- `exception`
+- `aop`
+
+За счёт этого процент покрытия в Sonar отражает именно покрытие бизнес-логики сервисного слоя.
+
+## CI Pipeline
+В проекте настроен GitHub Actions workflow:
+- сборка проекта;
+- запуск unit-тестов;
+- генерация `JaCoCo`-отчёта;
+- отправка анализа в `SonarCloud`.
+
+Файл workflow:
+- `.github/workflows/maven.yml`
+
+Для работы анализа в `SonarCloud` нужно добавить GitHub Secret:
+- `SONAR_TOKEN`
 
 ## Запуск проекта
 1. Создать БД:

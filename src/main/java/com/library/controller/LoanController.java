@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Positive;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -75,6 +76,28 @@ public class LoanController {
     @Operation(summary = "Create loan")
     public ResponseEntity<LoanDto> createLoan(@Valid @RequestBody LoanCreateDto loanCreateDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(loanService.create(loanCreateDto));
+    }
+
+    @PostMapping("/bulk/without-transaction")
+    @Operation(summary = "Create several loans without outer transaction")
+    public ResponseEntity<List<LoanDto>> createLoansWithoutTransaction(
+            @RequestBody
+            @NotEmpty(message = "Loan list must not be empty")
+            List<@Valid LoanCreateDto> loanCreateDtos
+    ) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(loanService.createBulkWithoutTransaction(loanCreateDtos));
+    }
+
+    @PostMapping("/bulk/with-transaction")
+    @Operation(summary = "Create several loans inside one transaction")
+    public ResponseEntity<List<LoanDto>> createLoansWithTransaction(
+            @RequestBody
+            @NotEmpty(message = "Loan list must not be empty")
+            List<@Valid LoanCreateDto> loanCreateDtos
+    ) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(loanService.createBulkWithTransaction(loanCreateDtos));
     }
 
     @PutMapping("/{id}")

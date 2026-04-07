@@ -23,11 +23,26 @@
         <mapstruct.version>1.5.5.Final</mapstruct.version>
         <lombok.version>1.18.30</lombok.version>
         <springdoc.version>2.3.0</springdoc.version>
+        <jacoco.version>0.8.12</jacoco.version>
         <sonar-maven-plugin.version>4.0.0.4121</sonar-maven-plugin.version>
         <sonar.organization>ownage699</sonar.organization>
         <sonar.projectKey>ownage69_JavaProject</sonar.projectKey>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
-        <sonar.coverage.exclusions>src/main/java/**/*.java</sonar.coverage.exclusions>
+        <sonar.coverage.jacoco.xmlReportPaths>
+            ${project.basedir}/target/site/jacoco/jacoco.xml
+        </sonar.coverage.jacoco.xmlReportPaths>
+        <sonar.coverage.exclusions>
+            src/main/java/com/library/LibraryServiceApplication.java,
+            src/main/java/com/library/aop/**,
+            src/main/java/com/library/cache/**,
+            src/main/java/com/library/controller/**,
+            src/main/java/com/library/dto/**,
+            src/main/java/com/library/entity/**,
+            src/main/java/com/library/exception/**,
+            src/main/java/com/library/mapper/**,
+            src/main/java/com/library/repository/**,
+            src/main/java/com/library/service/BookFilterQueryType.java
+        </sonar.coverage.exclusions>
     </properties>
 
     <dependencies>
@@ -161,6 +176,33 @@
                         <version>10.12.5</version>
                     </dependency>
                 </dependencies>
+            </plugin>
+
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco.version}</version>
+                <executions>
+                    <execution>
+                        <id>prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                        <configuration>
+                            <formats>
+                                <format>XML</format>
+                                <format>HTML</format>
+                            </formats>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
 
             <plugin>
