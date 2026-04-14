@@ -65,4 +65,68 @@ class ScenarioTaskRegistryServiceTest {
                 .isInstanceOf(java.util.NoSuchElementException.class)
                 .hasMessage("Task not found with id: 99");
     }
+
+    @Test
+    void markRunningShouldIgnoreTasksThatAreAlreadyRunningOrTerminal() {
+        Long taskId = scenarioTaskRegistryService.registerTask();
+
+        scenarioTaskRegistryService.markRunning(taskId);
+        scenarioTaskRegistryService.markRunning(taskId);
+
+        ScenarioTaskStatusDto runningStatus = scenarioTaskRegistryService.getTaskStatus(taskId);
+        assertThat(runningStatus.getStatus()).isEqualTo(ScenarioTaskState.RUNNING);
+        assertThat(runningStatus.getRunningTasks()).isEqualTo(1);
+
+        scenarioTaskRegistryService.markCompleted(taskId, "done");
+        scenarioTaskRegistryService.markRunning(taskId);
+
+        ScenarioTaskStatusDto completedStatus = scenarioTaskRegistryService.getTaskStatus(taskId);
+        assertThat(completedStatus.getStatus()).isEqualTo(ScenarioTaskState.COMPLETED);
+        assertThat(completedStatus.getRunningTasks()).isZero();
+        assertThat(completedStatus.getCompletedTasks()).isEqualTo(1);
+    }
+
+    @Test
+    void markCompletedShouldIgnoreAlreadyCompletedTask() {
+        Long taskId = scenarioTaskRegistryService.registerTask();
+        scenarioTaskRegistryService.markCompleted(taskId, "first");
+
+        scenarioTaskRegistryService.markCompleted(taskId, "second");
+
+        ScenarioTaskStatusDto taskStatus = scenarioTaskRegistryService.getTaskStatus(taskId);
+        assertThat(taskStatus.getStatus()).isEqualTo(ScenarioTaskState.COMPLETED);
+        assertThat(taskStatus.getResult()).isEqualTo("first");
+        assertThat(taskStatus.getCompletedTasks()).isEqualTo(1);
+    }
+
+    @Test
+    void markFailedShouldUseDefaultMessageAndIgnoreAlreadyFailedTask() {
+        Long taskId = scenarioTaskRegistryService.registerTask();
+
+        scenarioTaskRegistryService.markFailed(taskId, new IllegalStateException(" "));
+        scenarioTaskRegistryService.markFailed(taskId, new IllegalStateException("another"));
+
+        ScenarioTaskStatusDto taskStatus = scenarioTaskRegistryService.getTaskStatus(taskId);
+        assertThat(taskStatus.getStatus()).isEqualTo(ScenarioTaskState.FAILED);
+        assertThat(taskStatus.getErrorMessage()).isEqualTo("Async task failed without details");
+        assertThat(taskStatus.getFailedTasks()).isEqualTo(1);
+    }
+
+    @Test
+    void markFailedShouldUseDefaultMessageWhenThrowableMessageIsNull() {
+        Long taskId = scenarioTaskRegistryService.registerTask();
+
+        scenarioTaskRegistryService.markFailed(taskId, new IllegalStateException((String) null));
+
+        ScenarioTaskStatusDto taskStatus = scenarioTaskRegistryService.getTaskStatus(taskId);
+        assertThat(taskStatus.getStatus()).isEqualTo(ScenarioTaskState.FAILED);
+        assertThat(taskStatus.getErrorMessage()).isEqualTo("Async task failed without details");
+    }
+
+    @Test
+    void markRunningShouldThrowWhenTaskDoesNotExist() {
+        assertThatThrownBy(() -> scenarioTaskRegistryService.markRunning(77L))
+                .isInstanceOf(java.util.NoSuchElementException.class)
+                .hasMessage("Task not found with id: 77");
+    }
 }
