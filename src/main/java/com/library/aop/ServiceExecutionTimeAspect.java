@@ -19,7 +19,7 @@ public class ServiceExecutionTimeAspect {
             return joinPoint.proceed();
         } finally {
             long durationMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startedAt);
-            log.info(
+            log.debug(
                     "Service method {} executed in {} ms",
                     joinPoint.getSignature().toShortString(),
                     durationMs

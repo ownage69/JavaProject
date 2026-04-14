@@ -1,0 +1,3 @@
+library:
+  scenario:
+    async-delay-millis: 0

@@ -26,7 +26,7 @@ public class ScenarioAsyncExecutor {
             scenarioAsyncDelayService.simulateProcessingDelay();
             String result = scenarioService.createWithTransaction(scenarioCreateDto);
             scenarioTaskRegistryService.markCompleted(taskId, result);
-            log.info("Async scenario task {} completed successfully", taskId);
+            log.debug("Async scenario task {} completed successfully", taskId);
             return CompletableFuture.completedFuture(result);
         } catch (Exception exception) {
             scenarioTaskRegistryService.markFailed(taskId, exception);

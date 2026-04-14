@@ -15,6 +15,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.task.TaskRejectedException;
 
 @ExtendWith(MockitoExtension.class)
 class ScenarioAsyncServiceTest {
@@ -71,6 +72,33 @@ class ScenarioAsyncServiceTest {
         ScenarioTaskStatusDto response = scenarioAsyncService.getTaskStatus(18L);
 
         assertThat(response).isEqualTo(taskStatus);
+    }
+
+    @Test
+    void createWithTransactionAsyncShouldMarkTaskFailedWhenExecutorRejectsSubmission() {
+        ScenarioCreateDto scenarioCreateDto = createScenarioCreateDto();
+        ScenarioTaskStatusDto taskStatus = new ScenarioTaskStatusDto(
+                22L,
+                ScenarioTaskState.FAILED,
+                null,
+                "Executor queue is full",
+                22L,
+                0,
+                0,
+                1
+        );
+        TaskRejectedException exception = new TaskRejectedException("Executor queue is full");
+        when(scenarioTaskRegistryService.registerTask()).thenReturn(22L);
+        when(scenarioAsyncExecutor.createWithTransactionAsync(22L, scenarioCreateDto))
+                .thenThrow(exception);
+        when(scenarioTaskRegistryService.getTaskStatus(22L)).thenReturn(taskStatus);
+
+        ScenarioTaskSubmissionDto response =
+                scenarioAsyncService.createWithTransactionAsync(scenarioCreateDto);
+
+        assertThat(response.getTaskId()).isEqualTo(22L);
+        assertThat(response.getStatus()).isEqualTo(ScenarioTaskState.FAILED);
+        verify(scenarioTaskRegistryService).markFailed(22L, exception);
     }
 
     private ScenarioCreateDto createScenarioCreateDto() {

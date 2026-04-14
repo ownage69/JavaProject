@@ -41,7 +41,16 @@ logging:
 
 server:
   port: 8080
+  compression:
+    enabled: true
+    min-response-size: 1024
+    mime-types: application/json,text/plain,text/html,text/xml,text/css,application/javascript
 
 library:
   scenario:
     async-delay-millis: 10000
+    async:
+      core-pool-size: 16
+      max-pool-size: 64
+      queue-capacity: 2000
+      await-termination-seconds: 30

@@ -16,7 +16,7 @@ public class ScenarioAsyncDelayService {
             return;
         }
         try {
-            log.info("Simulating async scenario delay for {} ms", asyncDelayMillis);
+            log.debug("Simulating async scenario delay for {} ms", asyncDelayMillis);
             Thread.sleep(asyncDelayMillis);
         } catch (InterruptedException exception) {
             Thread.currentThread().interrupt();

@@ -51,10 +51,10 @@
         </rollingPolicy>
     </appender>
 
-    <logger name="com.library" level="DEBUG"/>
+    <logger name="com.library" level="INFO"/>
     <logger name="com.library.aop" level="INFO"/>
     <logger name="org.springframework.web" level="INFO"/>
-    <logger name="org.hibernate.SQL" level="DEBUG"/>
+    <logger name="org.hibernate.SQL" level="WARN"/>
     <logger name="org.hibernate.orm.jdbc.bind" level="OFF"/>
     <logger name="org.hibernate.stat" level="OFF"/>
 

@@ -200,7 +200,7 @@ public class BookService {
 
     public void invalidateFilterCache() {
         bookFilterIndex.invalidateAll();
-        log.info("cache invalidated");
+        log.debug("cache invalidated");
     }
 
     private BookPageDto filterBooks(
