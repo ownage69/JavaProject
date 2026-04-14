@@ -41,3 +41,7 @@ logging:
 
 server:
   port: 8080
+
+library:
+  scenario:
+    async-delay-millis: 10000
