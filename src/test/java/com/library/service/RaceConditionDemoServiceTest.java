@@ -71,9 +71,10 @@ class RaceConditionDemoServiceTest {
     void waitForCompletionShouldThrowWhenInterrupted() throws Exception {
         @SuppressWarnings("unchecked")
         Future<Object> future = mock(Future.class);
+        List<Future<Object>> futures = List.of(future);
         when(future.get()).thenThrow(new InterruptedException("stop"));
 
-        assertThatThrownBy(() -> invokePrivate("waitForCompletion", List.class, List.of(future)))
+        assertThatThrownBy(() -> invokePrivate("waitForCompletion", List.class, futures))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("Race condition demo was interrupted")
                 .hasCauseInstanceOf(InterruptedException.class);
@@ -84,9 +85,10 @@ class RaceConditionDemoServiceTest {
     void waitForCompletionShouldWrapExecutionExceptionCause() throws Exception {
         @SuppressWarnings("unchecked")
         Future<Object> future = mock(Future.class);
+        List<Future<Object>> futures = List.of(future);
         when(future.get()).thenThrow(new ExecutionException(new IllegalArgumentException("boom")));
 
-        assertThatThrownBy(() -> invokePrivate("waitForCompletion", List.class, List.of(future)))
+        assertThatThrownBy(() -> invokePrivate("waitForCompletion", List.class, futures))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("Race condition demo failed")
                 .hasCauseInstanceOf(IllegalArgumentException.class);
