@@ -3,13 +3,18 @@ spring:
     name: library-service
 
   mvc:
-    log-request-details: true
+    log-request-details: false
 
   datasource:
     url: jdbc:postgresql://localhost:5432/library
     username: ${DB_USERNAME:postgres}
     password: ${DB_PASSWORD:190817}
     driver-class-name: org.postgresql.Driver
+    hikari:
+      minimum-idle: 10
+      maximum-pool-size: 30
+      connection-timeout: 10000
+      validation-timeout: 3000
 
   jpa:
     hibernate:
@@ -35,12 +40,18 @@ logging:
   file:
     path: logs
   rotation:
-    max-file-size: 10KB
+    max-file-size: 100MB
     max-history: 14
     total-size-cap: 1GB
 
 server:
   port: 8080
+  tomcat:
+    threads:
+      max: 200
+      min-spare: 20
+    accept-count: 500
+    max-connections: 4096
   compression:
     enabled: true
     min-response-size: 1024
