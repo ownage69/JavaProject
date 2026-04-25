@@ -26,8 +26,8 @@ public class LoanService {
     private static final String LOAN_NOT_FOUND_WITH_ID = "Loan not found with id: ";
     private static final String BOOK_NOT_FOUND_WITH_ID = "Book not found with id: ";
     private static final String READER_NOT_FOUND_WITH_ID = "Reader not found with id: ";
-    private static final String ACTIVE_LOAN_EXISTS_FOR_BOOK_ID =
-            "Book is already loaned and not returned. Book id: ";
+    private static final String NO_AVAILABLE_COPY_FOR_BOOK_ID =
+            "No available copy remaining for book id: ";
 
     private final LoanRepository loanRepository;
     private final BookRepository bookRepository;
@@ -76,11 +76,25 @@ public class LoanService {
                         READER_NOT_FOUND_WITH_ID + loanCreateDto.getReaderId()
                 ));
 
-        ensureBookIsAvailable(book.getId(), loan.getId());
+        ensureBookHasAvailableCopy(book, loan);
 
         loan.setBook(book);
         loan.setReader(reader);
         loan.setDueDate(loanCreateDto.getDueDate());
+
+        Loan saved = loanRepository.save(loan);
+        return toDto(saved);
+    }
+
+    @Transactional
+    public LoanDto returnBook(Long id) {
+        Loan loan = loanRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException(LOAN_NOT_FOUND_WITH_ID + id));
+
+        if (!loan.isReturned()) {
+            loan.setReturned(true);
+            loan.setReturnDate(LocalDate.now());
+        }
 
         Loan saved = loanRepository.save(loan);
         return toDto(saved);
@@ -113,13 +127,14 @@ public class LoanService {
         Book book = resolveBook(loanCreateDto.getBookId(), booksById);
         Reader reader = resolveReader(loanCreateDto.getReaderId(), readersById);
 
-        ensureBookIsAvailable(book.getId(), null);
+        ensureBookHasAvailableCopy(book, null);
 
         Loan loan = new Loan();
         loan.setBook(book);
         loan.setReader(reader);
         loan.setLoanDate(LocalDate.now());
         loan.setDueDate(loanCreateDto.getDueDate());
+        loan.setReturnDate(null);
         loan.setReturned(false);
         return loan;
     }
@@ -160,13 +175,22 @@ public class LoanService {
                 .orElseThrow(() -> new NoSuchElementException(READER_NOT_FOUND_WITH_ID + readerId));
     }
 
-    private void ensureBookIsAvailable(Long bookId, Long currentLoanId) {
-        loanRepository.findFirstByBookIdAndReturnedFalse(bookId)
-                .filter(existingLoan -> currentLoanId == null
-                        || !existingLoan.getId().equals(currentLoanId))
-                .ifPresent(existingLoan -> {
-                    throw new IllegalArgumentException(ACTIVE_LOAN_EXISTS_FOR_BOOK_ID + bookId);
-                });
+    private void ensureBookHasAvailableCopy(Book book, Loan currentLoan) {
+        long activeLoans = loanRepository.countByBookIdAndReturnedFalse(book.getId());
+        int totalCopies = book.getTotalCopies() == null || book.getTotalCopies() < 1
+                ? 3
+                : book.getTotalCopies();
+
+        if (currentLoan != null
+                && currentLoan.getBook() != null
+                && currentLoan.getBook().getId().equals(book.getId())
+                && !currentLoan.isReturned()) {
+            activeLoans = Math.max(activeLoans - 1, 0);
+        }
+
+        if (activeLoans >= totalCopies) {
+            throw new IllegalArgumentException(NO_AVAILABLE_COPY_FOR_BOOK_ID + book.getId());
+        }
     }
 
     private LoanDto toDto(Loan loan) {
@@ -179,6 +203,7 @@ public class LoanService {
                 readerName,
                 loan.getLoanDate(),
                 loan.getDueDate(),
+                loan.getReturnDate(),
                 loan.isReturned()
         );
     }

@@ -36,6 +36,11 @@ public class BookCreateDto {
     @Schema(description = "Publication year", example = "1949")
     private Integer publishYear;
 
+    @NotNull(message = "Total copies is required")
+    @Min(value = 1, message = "Total copies must be at least 1")
+    @Schema(description = "Number of copies available in the library", example = "3")
+    private Integer totalCopies;
+
     @NotNull(message = "Publisher id is required")
     @Positive(message = "Publisher id must be positive")
     @Schema(description = "Publisher identifier", example = "2")

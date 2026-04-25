@@ -28,6 +28,14 @@ spring-shell.log
 .env
 application-local.yml
 application-local.properties
+frontend/.env
+frontend/.env.local
+frontend/.env.production
+
+# Frontend build
+frontend/node_modules/
+frontend/dist/
+booksimages
 
 *.txt
 

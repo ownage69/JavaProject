@@ -145,6 +145,7 @@ public class BookService {
                 .orElseThrow(() -> new NoSuchElementException(BOOK_NOT_FOUND_WITH_ID + id));
 
         validateUniqueIsbn(bookCreateDto.getIsbn(), id);
+        validateCopyCount(book, bookCreateDto.getTotalCopies());
         bookMapper.updateEntityFromDto(bookCreateDto, book);
         book.setIsbn(normalizeIsbn(book.getIsbn()));
         applyRelations(book, bookCreateDto);
@@ -162,7 +163,7 @@ public class BookService {
         book.getAuthors().clear();
         book.getCategories().clear();
         bookRepository.delete(book);
-        log.debug("Удалено займов для книги id={}: {}", id, removedLoans);
+        log.debug("Removed loans for book id={}: {}", id, removedLoans);
         invalidateFilterCache();
     }
 
@@ -307,6 +308,19 @@ public class BookService {
         if (duplicate) {
             throw new IllegalArgumentException(
                     "Book with ISBN '" + normalizedIsbn + "' already exists"
+            );
+        }
+    }
+
+    private void validateCopyCount(Book book, Integer requestedTotalCopies) {
+        int normalizedTotalCopies = requestedTotalCopies == null || requestedTotalCopies < 1
+                ? 1
+                : requestedTotalCopies;
+        long activeLoans = loanRepository.countByBookIdAndReturnedFalse(book.getId());
+
+        if (normalizedTotalCopies < activeLoans) {
+            throw new IllegalArgumentException(
+                    "Total copies cannot be less than active loans for book id: " + book.getId()
             );
         }
     }

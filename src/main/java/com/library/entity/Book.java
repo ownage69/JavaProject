@@ -43,6 +43,9 @@ public class Book {
     @Column(name = "publish_year")
     private Integer publishYear;
 
+    @Column(name = "total_copies")
+    private Integer totalCopies = 3;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "publisher_id", nullable = false)
     private Publisher publisher;

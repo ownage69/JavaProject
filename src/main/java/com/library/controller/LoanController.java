@@ -109,6 +109,14 @@ public class LoanController {
         return ResponseEntity.ok(loanService.update(id, loanCreateDto));
     }
 
+    @PostMapping("/{id}/return")
+    @Operation(summary = "Mark loan as returned")
+    public ResponseEntity<LoanDto> returnLoan(
+            @PathVariable @Positive(message = "Loan id must be positive") Long id
+    ) {
+        return ResponseEntity.ok(loanService.returnBook(id));
+    }
+
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete loan")
     public ResponseEntity<Void> deleteLoan(

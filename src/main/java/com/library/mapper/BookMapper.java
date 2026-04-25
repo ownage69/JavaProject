@@ -5,10 +5,14 @@ import com.library.dto.BookDto;
 import com.library.entity.Book;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class BookMapper {
+
+    private static final int DEFAULT_TOTAL_COPIES = 3;
 
     public BookDto toDto(Book book) {
         if (book == null) {
@@ -35,12 +39,21 @@ public class BookMapper {
                 .map(category -> category.getName())
                 .collect(LinkedHashSet::new, LinkedHashSet::add, LinkedHashSet::addAll);
 
+        int totalCopies = resolveTotalCopies(book);
+        int activeLoans = (int) book.getLoans()
+                .stream()
+                .filter(loan -> !loan.isReturned())
+                .count();
+        int availableCopies = Math.max(totalCopies - activeLoans, 0);
+
         return new BookDto(
                 book.getId(),
                 book.getTitle(),
                 book.getIsbn(),
                 book.getDescription(),
                 book.getPublishYear(),
+                totalCopies,
+                availableCopies,
                 book.getPublisher().getId(),
                 book.getPublisher().getName(),
                 authorIds,
@@ -60,6 +73,7 @@ public class BookMapper {
         book.setIsbn(bookCreateDto.getIsbn());
         book.setDescription(bookCreateDto.getDescription());
         book.setPublishYear(bookCreateDto.getPublishYear());
+        book.setTotalCopies(bookCreateDto.getTotalCopies());
         return book;
     }
 
@@ -72,5 +86,12 @@ public class BookMapper {
         book.setIsbn(bookCreateDto.getIsbn());
         book.setDescription(bookCreateDto.getDescription());
         book.setPublishYear(bookCreateDto.getPublishYear());
+        book.setTotalCopies(bookCreateDto.getTotalCopies());
+    }
+
+    private int resolveTotalCopies(Book book) {
+        return book.getTotalCopies() == null || book.getTotalCopies() < 1
+                ? DEFAULT_TOTAL_COPIES
+                : book.getTotalCopies();
     }
 }

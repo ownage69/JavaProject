@@ -38,5 +38,7 @@ public class Loan {
 
     private LocalDate dueDate;
 
+    private LocalDate returnDate;
+
     private boolean returned;
 }

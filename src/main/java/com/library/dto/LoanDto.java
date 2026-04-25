@@ -33,6 +33,9 @@ public class LoanDto {
     @Schema(description = "Loan due date", example = "2026-04-10")
     private LocalDate dueDate;
 
+    @Schema(description = "Loan return date", example = "2026-04-02")
+    private LocalDate returnDate;
+
     @Schema(description = "Loan return flag", example = "false")
     private boolean returned;
 }

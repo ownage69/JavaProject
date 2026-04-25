@@ -344,6 +344,7 @@ class BookServiceTest {
                 null,
                 "Description",
                 2024,
+                3,
                 9L,
                 Set.of(1L),
                 Set.of(3L)
@@ -376,6 +377,7 @@ class BookServiceTest {
                 " 9780306407001 ",
                 "Updated description",
                 2024,
+                4,
                 19L,
                 Set.of(11L),
                 Set.of(21L)
@@ -395,6 +397,7 @@ class BookServiceTest {
 
         assertThat(existingBook.getTitle()).isEqualTo("New Title");
         assertThat(existingBook.getIsbn()).isEqualTo("9780306407001");
+        assertThat(existingBook.getTotalCopies()).isEqualTo(4);
         assertThat(existingBook.getPublisher()).isEqualTo(publisher);
         assertThat(existingBook.getAuthors()).containsExactly(author);
         assertThat(existingBook.getCategories()).containsExactly(category);
@@ -450,6 +453,7 @@ class BookServiceTest {
                 " 9780306406157 ",
                 "A handbook of agile software craftsmanship",
                 2008,
+                3,
                 9L,
                 Set.of(1L, 2L),
                 Set.of(3L)
@@ -463,6 +467,8 @@ class BookServiceTest {
                 "isbn",
                 "desc",
                 2024,
+                3,
+                2,
                 1L,
                 "Publisher",
                 Set.of(1L),
@@ -483,6 +489,7 @@ class BookServiceTest {
         book.setIsbn("isbn-" + id);
         book.setDescription("Description " + id);
         book.setPublishYear(2020);
+        book.setTotalCopies(3);
         book.setPublisher(publisher);
         book.setAuthors(new LinkedHashSet<>(Set.of(author)));
         book.setCategories(new LinkedHashSet<>(Set.of(category)));

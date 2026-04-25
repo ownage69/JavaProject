@@ -178,5 +178,20 @@ mvn spring-boot:run
 ## Swagger UI
 `http://localhost:8080/swagger-ui.html`
 
+## Frontend SPA
+В репозитории добавлен отдельный frontend на `React + TypeScript + Vite`:
+
+- каталог: `frontend/`
+- документация по структуре и запуску: `frontend/README.md`
+
+Быстрый запуск:
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+По умолчанию Vite proxy направляет `/api` на `http://localhost:8080`, поэтому фронтенд можно использовать вместе с текущим Spring Boot backend без изменения базового URL в коде.
+
 ## SonarCloud
 `https://sonarcloud.io/project/overview?id=ownage69_JavaProject`

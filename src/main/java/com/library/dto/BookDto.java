@@ -27,6 +27,12 @@ public class BookDto {
     @Schema(description = "Publication year", example = "1949")
     private Integer publishYear;
 
+    @Schema(description = "Number of copies in the library", example = "3")
+    private Integer totalCopies;
+
+    @Schema(description = "Currently available copies", example = "2")
+    private Integer availableCopies;
+
     @Schema(description = "Publisher identifier", example = "2")
     private Long publisherId;
 

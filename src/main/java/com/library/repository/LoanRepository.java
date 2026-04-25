@@ -13,5 +13,7 @@ public interface LoanRepository extends JpaRepository<Loan, Long> {
 
     Optional<Loan> findFirstByBookIdAndReturnedFalse(Long bookId);
 
+    long countByBookIdAndReturnedFalse(Long bookId);
+
     long deleteByBookId(Long bookId);
 }
