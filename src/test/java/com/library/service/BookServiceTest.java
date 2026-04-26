@@ -418,6 +418,60 @@ class BookServiceTest {
     }
 
     @Test
+    void updateShouldAllowNullTotalCopiesWhenNoActiveLoansExist() {
+        Book existingBook = createFullBook(30L, "Flexible Copies");
+        BookCreateDto updateDto = new BookCreateDto(
+                "Flexible Copies",
+                " 9780306411111 ",
+                "Updated description",
+                2024,
+                null,
+                19L,
+                Set.of(11L),
+                Set.of(21L)
+        );
+        Publisher publisher = createPublisher(19L, "New Publisher", "PL");
+        Author author = createAuthor(11L, "Frank", "Herbert");
+        Category category = createCategory(21L, "Sci-Fi");
+
+        when(bookRepository.findById(30L)).thenReturn(Optional.of(existingBook));
+        when(bookRepository.existsByIsbnAndIdNot("9780306411111", 30L)).thenReturn(false);
+        when(loanRepository.countByBookIdAndReturnedFalse(30L)).thenReturn(0L);
+        when(publisherRepository.findById(19L)).thenReturn(Optional.of(publisher));
+        when(authorRepository.findAllById(Set.of(11L))).thenReturn(List.of(author));
+        when(categoryRepository.findAllById(Set.of(21L))).thenReturn(List.of(category));
+        when(bookRepository.save(existingBook)).thenReturn(existingBook);
+
+        BookDto result = bookService.update(30L, updateDto);
+
+        assertThat(result.getId()).isEqualTo(30L);
+        assertThat(existingBook.getTotalCopies()).isNull();
+    }
+
+    @Test
+    void updateShouldThrowWhenRequestedCopiesAreBelowActiveLoans() {
+        Book existingBook = createFullBook(31L, "Too Few Copies");
+        BookCreateDto updateDto = new BookCreateDto(
+                "Too Few Copies",
+                " 9780306412222 ",
+                "Updated description",
+                2024,
+                0,
+                19L,
+                Set.of(11L),
+                Set.of(21L)
+        );
+
+        when(bookRepository.findById(31L)).thenReturn(Optional.of(existingBook));
+        when(bookRepository.existsByIsbnAndIdNot("9780306412222", 31L)).thenReturn(false);
+        when(loanRepository.countByBookIdAndReturnedFalse(31L)).thenReturn(2L);
+
+        assertThatThrownBy(() -> bookService.update(31L, updateDto))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Total copies cannot be less than active loans for book id: 31");
+    }
+
+    @Test
     void deleteShouldRemoveLoansClearRelationsAndInvalidateCache() {
         Book book = createFullBook(13L, "Delete Me");
         when(bookRepository.findById(13L)).thenReturn(Optional.of(book));

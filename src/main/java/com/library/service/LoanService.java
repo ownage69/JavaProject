@@ -177,9 +177,7 @@ public class LoanService {
 
     private void ensureBookHasAvailableCopy(Book book, Loan currentLoan) {
         long activeLoans = loanRepository.countByBookIdAndReturnedFalse(book.getId());
-        int totalCopies = book.getTotalCopies() == null || book.getTotalCopies() < 1
-                ? 3
-                : book.getTotalCopies();
+        int totalCopies = resolveTotalCopies(book);
 
         if (currentLoan != null
                 && currentLoan.getBook() != null
@@ -191,6 +189,17 @@ public class LoanService {
         if (activeLoans >= totalCopies) {
             throw new IllegalArgumentException(NO_AVAILABLE_COPY_FOR_BOOK_ID + book.getId());
         }
+    }
+
+    private int resolveTotalCopies(Book book) {
+        Integer configuredCopies = book.getTotalCopies();
+        if (configuredCopies == null) {
+            return 3;
+        }
+        if (configuredCopies < 1) {
+            return 3;
+        }
+        return configuredCopies;
     }
 
     private LoanDto toDto(Loan loan) {

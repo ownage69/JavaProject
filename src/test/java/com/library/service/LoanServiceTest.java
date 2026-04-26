@@ -119,6 +119,28 @@ class LoanServiceTest {
     }
 
     @Test
+    void createShouldUseDefaultCopiesWhenBookTotalCopiesIsNull() {
+        LoanCreateDto loanCreateDto = new LoanCreateDto(1L, 2L, LocalDate.now().plusDays(14));
+        Book book = createBook(1L, "Clean Code");
+        book.setTotalCopies(null);
+        Reader reader = createReader(2L, "Anna", "Smirnova");
+
+        when(bookRepository.findAllById(List.of(1L))).thenReturn(List.of(book));
+        when(readerRepository.findAllById(List.of(2L))).thenReturn(List.of(reader));
+        when(loanRepository.countByBookIdAndReturnedFalse(1L)).thenReturn(2L);
+        when(loanRepository.save(any(Loan.class))).thenAnswer(invocation -> {
+            Loan savedLoan = invocation.getArgument(0);
+            savedLoan.setId(102L);
+            return savedLoan;
+        });
+
+        LoanDto result = loanService.create(loanCreateDto);
+
+        assertThat(result.getId()).isEqualTo(102L);
+        verify(loanRepository).save(any(Loan.class));
+    }
+
+    @Test
     void createShouldThrowWhenBookAlreadyHasActiveLoan() {
         LoanCreateDto loanCreateDto = new LoanCreateDto(1L, 2L, LocalDate.now().plusDays(7));
         Book book = createBook(1L, "Dune");
@@ -134,6 +156,28 @@ class LoanServiceTest {
                 .hasMessage("No available copy remaining for book id: 1");
 
         verify(loanRepository, never()).save(any(Loan.class));
+    }
+
+    @Test
+    void createShouldUseDefaultCopiesWhenBookTotalCopiesIsZero() {
+        LoanCreateDto loanCreateDto = new LoanCreateDto(1L, 2L, LocalDate.now().plusDays(14));
+        Book book = createBook(1L, "Zero Copies Config");
+        book.setTotalCopies(0);
+        Reader reader = createReader(2L, "Anna", "Smirnova");
+
+        when(bookRepository.findAllById(List.of(1L))).thenReturn(List.of(book));
+        when(readerRepository.findAllById(List.of(2L))).thenReturn(List.of(reader));
+        when(loanRepository.countByBookIdAndReturnedFalse(1L)).thenReturn(2L);
+        when(loanRepository.save(any(Loan.class))).thenAnswer(invocation -> {
+            Loan savedLoan = invocation.getArgument(0);
+            savedLoan.setId(101L);
+            return savedLoan;
+        });
+
+        LoanDto result = loanService.create(loanCreateDto);
+
+        assertThat(result.getId()).isEqualTo(101L);
+        verify(loanRepository).save(any(Loan.class));
     }
 
     @Test
@@ -312,6 +356,98 @@ class LoanServiceTest {
         assertThatThrownBy(() -> loanService.update(5L, updateDto))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("No available copy remaining for book id: 1");
+    }
+
+    @Test
+    void updateShouldThrowWhenCurrentLoanBookIsMissingAndNoCopiesRemain() {
+        Book targetBook = createBook(1L, "The Pragmatic Programmer");
+        targetBook.setTotalCopies(1);
+        Loan existingLoan = createLoan(5L, createBook(2L, "Other Book"), createReader(2L, "Elena", "Romanova"));
+        existingLoan.setBook(null);
+        LoanCreateDto updateDto = new LoanCreateDto(1L, 4L, LocalDate.now().plusDays(21));
+
+        when(loanRepository.findById(5L)).thenReturn(Optional.of(existingLoan));
+        when(bookRepository.findById(1L)).thenReturn(Optional.of(targetBook));
+        when(readerRepository.findById(4L)).thenReturn(Optional.of(createReader(4L, "Kirill", "Fedorov")));
+        when(loanRepository.countByBookIdAndReturnedFalse(1L)).thenReturn(1L);
+
+        assertThatThrownBy(() -> loanService.update(5L, updateDto))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("No available copy remaining for book id: 1");
+    }
+
+    @Test
+    void updateShouldThrowWhenCurrentLoanHasDifferentBookAndDefaultCopiesAreExhausted() {
+        Book targetBook = createBook(1L, "The Pragmatic Programmer");
+        targetBook.setTotalCopies(-1);
+        Loan existingLoan = createLoan(5L, createBook(2L, "Other Book"), createReader(2L, "Elena", "Romanova"));
+        LoanCreateDto updateDto = new LoanCreateDto(1L, 4L, LocalDate.now().plusDays(21));
+
+        when(loanRepository.findById(5L)).thenReturn(Optional.of(existingLoan));
+        when(bookRepository.findById(1L)).thenReturn(Optional.of(targetBook));
+        when(readerRepository.findById(4L)).thenReturn(Optional.of(createReader(4L, "Kirill", "Fedorov")));
+        when(loanRepository.countByBookIdAndReturnedFalse(1L)).thenReturn(3L);
+
+        assertThatThrownBy(() -> loanService.update(5L, updateDto))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("No available copy remaining for book id: 1");
+    }
+
+    @Test
+    void updateShouldThrowWhenCurrentLoanAlreadyReturnedAndNoCopiesRemain() {
+        Book targetBook = createBook(1L, "The Pragmatic Programmer");
+        targetBook.setTotalCopies(1);
+        Loan existingLoan = createLoan(5L, targetBook, createReader(2L, "Elena", "Romanova"));
+        existingLoan.setReturned(true);
+        LoanCreateDto updateDto = new LoanCreateDto(1L, 4L, LocalDate.now().plusDays(21));
+
+        when(loanRepository.findById(5L)).thenReturn(Optional.of(existingLoan));
+        when(bookRepository.findById(1L)).thenReturn(Optional.of(targetBook));
+        when(readerRepository.findById(4L)).thenReturn(Optional.of(createReader(4L, "Kirill", "Fedorov")));
+        when(loanRepository.countByBookIdAndReturnedFalse(1L)).thenReturn(1L);
+
+        assertThatThrownBy(() -> loanService.update(5L, updateDto))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("No available copy remaining for book id: 1");
+    }
+
+    @Test
+    void returnBookShouldMarkLoanAsReturnedAndSetReturnDate() {
+        Loan loan = createLoan(15L, createBook(3L, "1984"), createReader(7L, "Ivan", "Petrov"));
+        when(loanRepository.findById(15L)).thenReturn(Optional.of(loan));
+        when(loanRepository.save(loan)).thenReturn(loan);
+
+        LoanDto result = loanService.returnBook(15L);
+
+        assertThat(result.isReturned()).isTrue();
+        assertThat(result.getReturnDate()).isEqualTo(LocalDate.now());
+        assertThat(loan.isReturned()).isTrue();
+        assertThat(loan.getReturnDate()).isEqualTo(LocalDate.now());
+    }
+
+    @Test
+    void returnBookShouldKeepAlreadyReturnedLoanDate() {
+        Loan loan = createLoan(16L, createBook(4L, "Dune"), createReader(8L, "Anna", "Sidorova"));
+        LocalDate returnedAt = LocalDate.now().minusDays(1);
+        loan.setReturned(true);
+        loan.setReturnDate(returnedAt);
+        when(loanRepository.findById(16L)).thenReturn(Optional.of(loan));
+        when(loanRepository.save(loan)).thenReturn(loan);
+
+        LoanDto result = loanService.returnBook(16L);
+
+        assertThat(result.isReturned()).isTrue();
+        assertThat(result.getReturnDate()).isEqualTo(returnedAt);
+        assertThat(loan.getReturnDate()).isEqualTo(returnedAt);
+    }
+
+    @Test
+    void returnBookShouldThrowWhenLoanMissing() {
+        when(loanRepository.findById(404L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> loanService.returnBook(404L))
+                .isInstanceOf(NoSuchElementException.class)
+                .hasMessage("Loan not found with id: 404");
     }
 
     @Test
