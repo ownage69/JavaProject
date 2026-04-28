@@ -200,6 +200,14 @@ docker compose up --build
 Render PostgreSQL создаётся пустым. Чтобы сайт показывал уже существующие локальные
 данные, перенесите их в Render DB:
 
+1. В Render откройте `library-service-db -> Info -> Networking`.
+2. В `PostgreSQL Inbound IP Rules` добавьте IP, с которого будете делать импорт:
+   - безопаснее: ваш публичный IP в формате `<ip>/32`;
+   - для быстрой проверки в учебном проекте: `0.0.0.0/0`.
+3. Нажмите `Save`. После этого в `Info` появятся `External Database URL` и
+   `PSQL Command`.
+4. Используйте `External Database URL` для импорта:
+
 ```bash
 export LOCAL_DATABASE_URL='postgresql://postgres:190817@localhost:5432/library'
 export RENDER_DATABASE_URL='postgresql://user:password@host:5432/library?sslmode=require'
@@ -213,6 +221,12 @@ bash scripts/migrate-local-postgres-to-render.sh
 
 ```bash
 MIGRATION_MODE=replace bash scripts/migrate-local-postgres-to-render.sh
+```
+
+Проверить количество строк в любой PostgreSQL базе:
+
+```bash
+bash scripts/check-postgres-counts.sh "$RENDER_DATABASE_URL"
 ```
 
 ## Swagger UI
