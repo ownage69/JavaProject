@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { runtimeConfig } from '../../config/runtime';
 
 const coverTones = ['forest', 'burgundy', 'ocean', 'gold'] as const;
 const staticCoverExtensions = ['jpg', 'jpeg', 'webp', 'png'] as const;
@@ -15,7 +16,8 @@ function resolveStaticCoverUrl(title: string, extensionIndex: number) {
     return null;
   }
 
-  return `/book-covers/${encodeURIComponent(normalizedTitle)}.${staticCoverExtensions[extensionIndex]}`;
+  const baseUrl = runtimeConfig.bookCoversBaseUrl.replace(/\/$/, '');
+  return `${baseUrl}/${encodeURIComponent(normalizedTitle)}.${staticCoverExtensions[extensionIndex]}`;
 }
 
 interface BookCoverProps {

@@ -19,6 +19,7 @@ RUN addgroup -S app \
     && chown -R app:app /app/logs
 
 COPY --from=build --chown=app:app /workspace/target/library-service-*.jar app.jar
+COPY --chown=app:app booksimages ./booksimages
 
 USER app
 EXPOSE 8080

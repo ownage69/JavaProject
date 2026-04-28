@@ -15,9 +15,16 @@ function resolveAuthMode(value: string | undefined): AuthMode {
   return value?.toLowerCase() === 'api' ? 'api' : 'mock';
 }
 
+function joinUrl(baseUrl: string, path: string) {
+  return `${baseUrl.replace(/\/$/, '')}/${path.replace(/^\//, '')}`;
+}
+
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '/api';
+
 export const runtimeConfig = {
   appName: import.meta.env.VITE_APP_NAME || 'Library System',
-  apiBaseUrl: import.meta.env.VITE_API_BASE_URL || '/api',
+  apiBaseUrl,
+  bookCoversBaseUrl: import.meta.env.VITE_BOOK_COVERS_BASE_URL || joinUrl(apiBaseUrl, 'book-covers'),
   backendTarget: import.meta.env.VITE_BACKEND_TARGET || 'http://localhost:8080',
   pagination: {
     pageSize: Number(import.meta.env.VITE_DEFAULT_PAGE_SIZE || 10),
