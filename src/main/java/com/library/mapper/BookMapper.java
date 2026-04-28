@@ -51,6 +51,7 @@ public class BookMapper {
                 book.getTitle(),
                 book.getIsbn(),
                 book.getDescription(),
+                book.getCoverImageUrl(),
                 book.getPublishYear(),
                 totalCopies,
                 availableCopies,
@@ -72,6 +73,7 @@ public class BookMapper {
         book.setTitle(bookCreateDto.getTitle());
         book.setIsbn(bookCreateDto.getIsbn());
         book.setDescription(bookCreateDto.getDescription());
+        book.setCoverImageUrl(bookCreateDto.getCoverImageUrl());
         book.setPublishYear(bookCreateDto.getPublishYear());
         book.setTotalCopies(bookCreateDto.getTotalCopies());
         return book;
@@ -85,6 +87,7 @@ public class BookMapper {
         book.setTitle(bookCreateDto.getTitle());
         book.setIsbn(bookCreateDto.getIsbn());
         book.setDescription(bookCreateDto.getDescription());
+        book.setCoverImageUrl(bookCreateDto.getCoverImageUrl());
         book.setPublishYear(bookCreateDto.getPublishYear());
         book.setTotalCopies(bookCreateDto.getTotalCopies());
     }

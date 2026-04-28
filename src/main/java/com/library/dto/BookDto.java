@@ -24,6 +24,9 @@ public class BookDto {
     @Schema(description = "Book description", example = "A dystopian social science fiction novel.")
     private String description;
 
+    @Schema(description = "Book cover URL or data URL", example = "data:image/webp;base64,...")
+    private String coverImageUrl;
+
     @Schema(description = "Publication year", example = "1949")
     private Integer publishYear;
 

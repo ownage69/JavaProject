@@ -9,7 +9,6 @@ import { StatusBadge } from '../../components/common/StatusBadge';
 import { SurfaceCard } from '../../components/common/SurfaceCard';
 import { useAsyncValue } from '../../hooks/useAsyncValue';
 import { usePermissions } from '../../hooks/usePermissions';
-import { useStoredBookCover } from '../../hooks/useStoredBookCover';
 import {
   authorService,
   bookService,
@@ -40,7 +39,6 @@ export function BookDetailsPage({ variant = 'app' }: BookDetailsPageProps) {
 
     return { book, authors, categories, publishers, loans };
   }, [id]);
-  const coverUrl = useStoredBookCover(data?.book.id ?? null);
 
   if (loading) {
     return <LoadingState title="Loading book details..." />;
@@ -96,7 +94,7 @@ export function BookDetailsPage({ variant = 'app' }: BookDetailsPageProps) {
       <div className="split-layout">
         <SurfaceCard className="book-detail-card">
           <div className="book-detail-card__cover">
-            <BookCover title={data.book.title} coverUrl={coverUrl} />
+            <BookCover title={data.book.title} coverUrl={data.book.coverImageUrl} />
           </div>
 
           <div className="book-detail-card__content">

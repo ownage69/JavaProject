@@ -50,6 +50,7 @@ export interface Book {
   title: string;
   isbn: string;
   description?: string | null;
+  coverImageUrl?: string | null;
   publishYear?: number | null;
   totalCopies?: number | null;
   availableCopies?: number | null;
@@ -66,6 +67,7 @@ export interface BookPayload {
   title: string;
   isbn: string;
   description: string;
+  coverImageUrl: string | null;
   publishYear: number | null;
   totalCopies: number;
   publisherId: number | null;

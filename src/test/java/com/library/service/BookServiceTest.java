@@ -276,11 +276,13 @@ class BookServiceTest {
 
         Book savedBook = bookCaptor.getValue();
         assertThat(savedBook.getIsbn()).isEqualTo("9780306406157");
+        assertThat(savedBook.getCoverImageUrl()).isEqualTo("data:image/webp;base64,clean-code-cover");
         assertThat(savedBook.getPublisher()).isEqualTo(publisher);
         assertThat(savedBook.getAuthors()).containsExactlyInAnyOrder(author1, author2);
         assertThat(savedBook.getCategories()).containsExactly(category);
 
         assertThat(result.getId()).isEqualTo(11L);
+        assertThat(result.getCoverImageUrl()).isEqualTo("data:image/webp;base64,clean-code-cover");
         assertThat(result.getPublisherName()).isEqualTo("Publisher");
         verify(bookFilterIndex).invalidateAll();
     }
@@ -343,6 +345,7 @@ class BookServiceTest {
                 "Book Without Isbn",
                 null,
                 "Description",
+                null,
                 2024,
                 3,
                 9L,
@@ -376,6 +379,7 @@ class BookServiceTest {
                 "New Title",
                 " 9780306407001 ",
                 "Updated description",
+                "data:image/webp;base64,updated-cover",
                 2024,
                 4,
                 19L,
@@ -397,6 +401,7 @@ class BookServiceTest {
 
         assertThat(existingBook.getTitle()).isEqualTo("New Title");
         assertThat(existingBook.getIsbn()).isEqualTo("9780306407001");
+        assertThat(existingBook.getCoverImageUrl()).isEqualTo("data:image/webp;base64,updated-cover");
         assertThat(existingBook.getTotalCopies()).isEqualTo(4);
         assertThat(existingBook.getPublisher()).isEqualTo(publisher);
         assertThat(existingBook.getAuthors()).containsExactly(author);
@@ -424,6 +429,7 @@ class BookServiceTest {
                 "Flexible Copies",
                 " 9780306411111 ",
                 "Updated description",
+                null,
                 2024,
                 null,
                 19L,
@@ -455,6 +461,7 @@ class BookServiceTest {
                 "Too Few Copies",
                 " 9780306412222 ",
                 "Updated description",
+                null,
                 2024,
                 0,
                 19L,
@@ -506,6 +513,7 @@ class BookServiceTest {
                 "Clean Code",
                 " 9780306406157 ",
                 "A handbook of agile software craftsmanship",
+                "data:image/webp;base64,clean-code-cover",
                 2008,
                 3,
                 9L,
@@ -520,6 +528,7 @@ class BookServiceTest {
                 title,
                 "isbn",
                 "desc",
+                null,
                 2024,
                 3,
                 2,
@@ -542,6 +551,7 @@ class BookServiceTest {
         book.setTitle(title);
         book.setIsbn("isbn-" + id);
         book.setDescription("Description " + id);
+        book.setCoverImageUrl("data:image/webp;base64,cover-" + id);
         book.setPublishYear(2020);
         book.setTotalCopies(3);
         book.setPublisher(publisher);

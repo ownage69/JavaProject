@@ -15,9 +15,8 @@ import { TextInput } from '../../components/forms/TextInput';
 import { useAsyncValue } from '../../hooks/useAsyncValue';
 import {
   getStoredBookCover,
-  readImageFileAsDataUrl,
   removeStoredBookCover,
-  setStoredBookCover,
+  readImageFileAsDataUrl,
 } from '../../services/bookCoverStorage';
 import {
   authorService,
@@ -77,11 +76,12 @@ function validate(values: BookFormValues): FormErrors<BookFormValues> {
   return errors;
 }
 
-function toPayload(values: BookFormValues): BookPayload {
+function toPayload(values: BookFormValues, coverImageUrl: string | null): BookPayload {
   return {
     title: values.title.trim(),
     isbn: values.isbn.trim(),
     description: values.description.trim(),
+    coverImageUrl,
     publishYear: values.publishYear ? Number(values.publishYear) : null,
     totalCopies: Number(values.totalCopies),
     publisherId: values.publisherId ? Number(values.publisherId) : null,
@@ -123,7 +123,6 @@ export function BookFormPage() {
   const [apiError, setApiError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
-  const [isCoverDirty, setIsCoverDirty] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -139,7 +138,14 @@ export function BookFormPage() {
         authorIds: data.book.authorIds.map(String),
         categoryIds: data.book.categoryIds.map(String),
       });
-      setIsCoverDirty(false);
+      const serverCoverUrl = data.book.coverImageUrl || null;
+      setCoverPreview(serverCoverUrl);
+
+      if (serverCoverUrl) {
+        return () => {
+          cancelled = true;
+        };
+      }
 
       getStoredBookCover(data.book.id)
         .then((storedCover) => {
@@ -159,7 +165,6 @@ export function BookFormPage() {
     }
 
     setCoverPreview(null);
-    setIsCoverDirty(false);
     return () => {
       cancelled = true;
     };
@@ -192,7 +197,6 @@ export function BookFormPage() {
     try {
       const nextPreview = await readImageFileAsDataUrl(file);
       setCoverPreview(nextPreview);
-      setIsCoverDirty(true);
     } catch (coverError) {
       setApiError(getErrorMessage(coverError));
     } finally {
@@ -214,23 +218,14 @@ export function BookFormPage() {
     setIsSubmitting(true);
 
     try {
-      const payload = toPayload(values);
+      const payload = toPayload(values, coverPreview);
 
       if (isEditMode && id) {
         await bookService.update(id, payload);
-        if (isCoverDirty) {
-          if (coverPreview) {
-            await setStoredBookCover(id, coverPreview);
-          } else {
-            await removeStoredBookCover(id);
-          }
-        }
+        removeStoredBookCover(id).catch(() => undefined);
         navigate(`/books/${id}${fromSearch}`);
       } else {
         const created = await bookService.create(payload);
-        if (isCoverDirty && coverPreview) {
-          await setStoredBookCover(created.id, coverPreview);
-        }
         navigate(`/books/${created.id}${fromSearch}`);
       }
     } catch (submitError) {
@@ -346,7 +341,7 @@ export function BookFormPage() {
 
           <FormField
             label="Cover image"
-            hint="Stored locally in this browser until the backend gets a cover upload field."
+            hint="Saved with the book and visible on every device."
           >
             <div className="cover-upload">
               <div className="cover-upload__preview">
@@ -371,7 +366,6 @@ export function BookFormPage() {
                     className="button button--ghost-danger"
                     onClick={() => {
                       setCoverPreview(null);
-                      setIsCoverDirty(true);
                     }}
                   >
                     <Trash2 size={16} />

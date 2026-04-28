@@ -40,6 +40,9 @@ public class Book {
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @Column(name = "cover_image_url", columnDefinition = "TEXT")
+    private String coverImageUrl;
+
     @Column(name = "publish_year")
     private Integer publishYear;
 

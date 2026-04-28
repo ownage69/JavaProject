@@ -1,7 +1,6 @@
 import { PencilLine, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { StatusBadge } from '../common/StatusBadge';
-import { useStoredBookCover } from '../../hooks/useStoredBookCover';
 import type { Book } from '../../types/entities';
 import { BookCover } from './BookCover';
 
@@ -22,7 +21,7 @@ export function BookCard({
   returnTo,
   canManage = false,
 }: BookCardProps) {
-  const coverUrl = useStoredBookCover(book.id);
+  const coverUrl = book.coverImageUrl || null;
   const totalCopies = book.totalCopies || 3;
   const availableCopies =
     typeof book.availableCopies === 'number'

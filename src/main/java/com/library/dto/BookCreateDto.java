@@ -32,6 +32,10 @@ public class BookCreateDto {
     @Schema(description = "Book description", example = "A dystopian social science fiction novel.")
     private String description;
 
+    @Size(max = 500000, message = "Cover image must not exceed 500000 characters")
+    @Schema(description = "Book cover URL or data URL", example = "data:image/webp;base64,...")
+    private String coverImageUrl;
+
     @Min(value = 1000, message = "Publish year must be at least 1000")
     @Schema(description = "Publication year", example = "1949")
     private Integer publishYear;
